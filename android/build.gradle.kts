@@ -1,5 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 allprojects {
     repositories {
@@ -26,9 +26,9 @@ subprojects {
 
 // Align every Flutter plugin with the Java 11 target used by the app.
 subprojects {
-    tasks.withType<KotlinCompilationTask<*>>().configureEach {
+    tasks.withType<KotlinJvmCompile>().configureEach {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget = JvmTarget.JVM_11
         }
     }
     tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
