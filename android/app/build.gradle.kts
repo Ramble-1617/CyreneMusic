@@ -8,10 +8,21 @@ val keystoreProperties = Properties().apply {
     }
 }
 
+val releaseStoreFile = keystoreProperties["storeFile"]
+    ?.toString()
+    ?.takeIf { it.isNotBlank() }
+    ?.let { rootProject.file(it) }
+
+val hasReleaseSigning = releaseStoreFile?.isFile == true &&
+    releaseStoreFile.length() > 0 &&
+    keystoreProperties["storePassword"]?.toString()?.isNotBlank() == true &&
+    keystoreProperties["keyAlias"]?.toString()?.isNotBlank() == true &&
+    keystoreProperties["keyPassword"]?.toString()?.isNotBlank() == true
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -23,7 +34,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-        // 启用核心库脱糖支持（flutter_local_notifications 需要）
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -33,53 +43,42 @@ android {
 
     defaultConfig {
         applicationId = "com.cyrene.music"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion  // 核心库脱糖需要至少 API 21
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-
-        // 默认应用名称
         manifestPlaceholders["appName"] = "Cyrene Music"
     }
 
     signingConfigs {
         create("release") {
-            // 优先使用 key.properties 中的配置，如果不存在则使用默认的 cyrene-release.jks
-            val defaultKeystoreFile = rootProject.file("cyrene-release.jks")
-            val storeFileValue = keystoreProperties["storeFile"]?.takeIf { it.toString().isNotBlank() }
-                ?: if (defaultKeystoreFile.exists()) "cyrene-release.jks" else null
-            
-            if (storeFileValue != null) {
-                storeFile = rootProject.file(storeFileValue)
+            if (releaseStoreFile != null) {
+                storeFile = releaseStoreFile
             }
-            
-            // 从 key.properties 读取密码和别名信息
-            // 如果 key.properties 不存在，这些值将为空，构建会失败并提示需要配置签名信息
-            keystoreProperties["storePassword"]?.takeIf { it.toString().isNotBlank() }?.let { 
-                storePassword = it.toString() 
+            keystoreProperties["storePassword"]?.takeIf { it.toString().isNotBlank() }?.let {
+                storePassword = it.toString()
             }
-            keystoreProperties["keyAlias"]?.takeIf { it.toString().isNotBlank() }?.let { 
-                keyAlias = it.toString() 
+            keystoreProperties["keyAlias"]?.takeIf { it.toString().isNotBlank() }?.let {
+                keyAlias = it.toString()
             }
-            keystoreProperties["keyPassword"]?.takeIf { it.toString().isNotBlank() }?.let { 
-                keyPassword = it.toString() 
+            keystoreProperties["keyPassword"]?.takeIf { it.toString().isNotBlank() }?.let {
+                keyPassword = it.toString()
             }
         }
     }
 
     buildTypes {
         debug {
-            // Debug 版本增加后缀，实现共存
             applicationIdSuffix = ".debug"
             manifestPlaceholders["appName"] = "Cyrene Music (Debug)"
         }
-
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("release")
+            // 使用正式密钥；公开 Fork 的 CI 没有密钥时回退到 Android debug keystore。
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             manifestPlaceholders["appName"] = "Cyrene Music"
         }
     }
@@ -90,12 +89,7 @@ flutter {
 }
 
 dependencies {
-    // 核心库脱糖支持（flutter_local_notifications 需要 2.1.4+）
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-
-    // 媒体兼容库：提供 MediaBrowserCompat / MediaControllerCompat / MediaStyle 等
     implementation("androidx.media:media:1.7.0")
-    
-    // Android 12+ Splash Screen API 向后兼容库
     implementation("androidx.core:core-splashscreen:1.0.1")
 }
