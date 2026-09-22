@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+
 allprojects {
     repositories {
         // 阿里云镜像（加速国内下载）
@@ -21,11 +24,12 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// Flutter plugins may declare an older Kotlin target. Keep every Android module
-// aligned with the Java 11 target used by the app and current Flutter toolchain.
+// Align every Flutter plugin with the Java 11 target used by the app.
 subprojects {
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+    tasks.withType<KotlinCompilationTask<*>>().configureEach {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
     }
     tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
         sourceCompatibility = JavaVersion.VERSION_11.toString()
