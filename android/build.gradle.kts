@@ -24,7 +24,7 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// Align Flutter Android library plugins with the app's Java/Kotlin 11 target.
+// Align Flutter Android library plugins with the app's Java/Kotlin 17 target.
 // Use AGP's DSL before it creates JavaCompile tasks, preserving the Android bootclasspath.
 subprojects {
     val androidLibraryProject = this
@@ -35,7 +35,7 @@ subprojects {
     }
     tasks.withType<KotlinJvmCompile>().configureEach {
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
+            jvmTarget = JvmTarget.JVM_17
         }
     }
 }
