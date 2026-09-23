@@ -1,4 +1,3 @@
-import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
@@ -25,17 +24,19 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// Align Kotlin bytecode and Java source/bytecode targets across Flutter plugins.
-// Android Gradle Plugin does not support JavaCompile --release for Android builds.
+// Align Flutter Android library plugins with the app's Java/Kotlin 11 target.
+// Use AGP's DSL before it creates JavaCompile tasks, preserving the Android bootclasspath.
 subprojects {
+    val androidLibraryProject = this
+    pluginManager.withPlugin("com.android.library") {
+        androidLibraryProject.apply(
+            from = androidLibraryProject.rootProject.file("android-library-compat.gradle")
+        )
+    }
     tasks.withType<KotlinJvmCompile>().configureEach {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_11
         }
-    }
-    tasks.withType<JavaCompile>().configureEach {
-        sourceCompatibility = JavaVersion.VERSION_11.toString()
-        targetCompatibility = JavaVersion.VERSION_11.toString()
     }
 }
 
