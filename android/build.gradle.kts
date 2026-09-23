@@ -25,24 +25,17 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// Align Kotlin bytecode with the Java 11 target used by the app.
+// Align Kotlin bytecode and Java source/bytecode targets across Flutter plugins.
+// Android Gradle Plugin does not support JavaCompile --release for Android builds.
 subprojects {
     tasks.withType<KotlinJvmCompile>().configureEach {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_11
         }
     }
-}
-
-// Flutter plugins may set Java compatibility during their own evaluation.
-// Apply this after all projects are configured, without JavaCompile --release
-// (which the Android Gradle plugin does not support).
-gradle.projectsEvaluated {
-    subprojects.forEach { subproject ->
-        subproject.tasks.withType<JavaCompile>().configureEach {
-            sourceCompatibility = JavaVersion.VERSION_11.toString()
-            targetCompatibility = JavaVersion.VERSION_11.toString()
-        }
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = JavaVersion.VERSION_11.toString()
+        targetCompatibility = JavaVersion.VERSION_11.toString()
     }
 }
 
