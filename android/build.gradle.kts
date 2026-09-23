@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
@@ -7,7 +8,7 @@ allprojects {
         maven { url = uri("https://maven.aliyun.com/repository/google") }
         maven { url = uri("https://maven.aliyun.com/repository/public") }
         maven { url = uri("https://maven.aliyun.com/repository/central") }
-        
+
         google()
         mavenCentral()
     }
@@ -31,7 +32,8 @@ subprojects {
             jvmTarget = JvmTarget.JVM_11
         }
     }
-    tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
+    tasks.withType<JavaCompile>().configureEach {
+        options.release.set(11)
         sourceCompatibility = JavaVersion.VERSION_11.toString()
         targetCompatibility = JavaVersion.VERSION_11.toString()
     }
