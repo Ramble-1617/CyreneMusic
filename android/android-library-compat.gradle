@@ -1,0 +1,8 @@
+// Keep Flutter Android library plugins on the same Java target as :app.
+// finalizeDsl runs before AGP creates JavaCompile tasks and preserves Android's bootclasspath.
+androidComponents {
+    finalizeDsl { library ->
+        library.compileOptions.sourceCompatibility = org.gradle.api.JavaVersion.VERSION_11
+        library.compileOptions.targetCompatibility = org.gradle.api.JavaVersion.VERSION_11
+    }
+}
