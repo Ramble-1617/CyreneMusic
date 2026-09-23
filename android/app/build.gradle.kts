@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.ApplicationExtension
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -26,7 +27,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-android {
+// Use the public AGP interface while retaining legacy mode for Flutter plugins.
+extensions.configure<ApplicationExtension> {
     namespace = "com.cyrene.music"
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
@@ -37,9 +39,7 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
+    // Kotlin JVM 17 is configured for all modules in android/build.gradle.kts.
 
     defaultConfig {
         applicationId = "com.cyrene.music"
@@ -68,11 +68,11 @@ android {
     }
 
     buildTypes {
-        debug {
+        getByName("debug") {
             applicationIdSuffix = ".debug"
             manifestPlaceholders["appName"] = "Cyrene Music (Debug)"
         }
-        release {
+        getByName("release") {
             // 使用正式密钥；公开 Fork 的 CI 没有密钥时回退到 Android debug keystore。
             signingConfig = if (hasReleaseSigning) {
                 signingConfigs.getByName("release")
