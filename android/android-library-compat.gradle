@@ -2,7 +2,7 @@
 // finalizeDsl runs before AGP creates JavaCompile tasks and preserves Android's bootclasspath.
 androidComponents {
     finalizeDsl { library ->
-        library.compileOptions.sourceCompatibility = org.gradle.api.JavaVersion.VERSION_11
-        library.compileOptions.targetCompatibility = org.gradle.api.JavaVersion.VERSION_11
+        library.compileOptions.sourceCompatibility = org.gradle.api.JavaVersion.VERSION_17
+        library.compileOptions.targetCompatibility = org.gradle.api.JavaVersion.VERSION_17
     }
 }
